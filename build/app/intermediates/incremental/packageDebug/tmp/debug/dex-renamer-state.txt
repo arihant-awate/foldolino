@@ -1,9 +1,9 @@
-#Wed Dec 04 15:46:50 IST 2024
-base.0=/Users/arihant/foldolino/build/app/intermediates/dex/debug/mergeExtDexDebug/classes.dex
-base.1=/Users/arihant/foldolino/build/app/intermediates/dex/debug/mergeLibDexDebug/0/classes.dex
-base.2=/Users/arihant/foldolino/build/app/intermediates/dex/debug/mergeProjectDexDebug/0/classes.dex
-base.3=/Users/arihant/foldolino/build/app/intermediates/dex/debug/mergeProjectDexDebug/1/classes.dex
-base.4=/Users/arihant/foldolino/build/app/intermediates/dex/debug/mergeProjectDexDebug/2/classes.dex
+#Wed Dec 04 21:11:04 IST 2024
+base.0=/Users/arihant/fold/foldolino/build/app/intermediates/dex/debug/mergeExtDexDebug/classes.dex
+base.1=/Users/arihant/fold/foldolino/build/app/intermediates/dex/debug/mergeLibDexDebug/0/classes.dex
+base.2=/Users/arihant/fold/foldolino/build/app/intermediates/dex/debug/mergeProjectDexDebug/0/classes.dex
+base.3=/Users/arihant/fold/foldolino/build/app/intermediates/dex/debug/mergeProjectDexDebug/1/classes.dex
+base.4=/Users/arihant/fold/foldolino/build/app/intermediates/dex/debug/mergeProjectDexDebug/2/classes.dex
 path.0=classes.dex
 path.1=0/classes.dex
 path.2=0/classes.dex

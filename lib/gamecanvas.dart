@@ -1,11 +1,12 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:syncfusion_flutter_signaturepad/signaturepad.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
 
 class GameCanvasScreen extends StatefulWidget {
   final int numberOfPlayers;
@@ -27,9 +28,102 @@ class _GameCanvasScreenState extends State<GameCanvasScreen> {
   final ScrollController _scrollController = ScrollController();
   double _penThickness = 5.0; // Default pen thickness
   Color _penColor = Colors.black; // Default pen color
+  String selectedLanguage = 'EN'; // Default language
 
   // Track the current player index to show their part
   int _currentPlayerIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLanguagePreference();
+  }
+
+  // Load language preference from SharedPreferences
+  _loadLanguagePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      selectedLanguage = prefs.getString('language') ?? 'EN'; // Default to 'EN'
+    });
+  }
+
+  // Save the selected language to SharedPreferences
+  _saveLanguagePreference(String language) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('language', language);
+  }
+
+  // Get language strings based on selected language
+  Map<String, String> getLanguageStrings(String languageCode) {
+    Map<String, Map<String, String>> languageStrings = {
+      'EN': {
+        'room_code': 'Room Code',
+        'waiting_for_players': 'Waiting for other players...',
+        'start': 'Start',
+        'clear': 'Clear',
+        'share': 'Share',
+        'premium_feature': 'Premium Feature',
+        'premium_message': 'This feature is only available for premium users. Would you like to buy the premium version?',
+        'buy_now': 'Buy Now',
+        'cancel': 'Cancel',
+        'pass_the_phone': 'Pass the phone to',
+        'draw_part': 'They need to draw: ',
+      },
+      'DE': {
+        'room_code': 'Raumcode',
+        'waiting_for_players': 'Warten auf andere Spieler...',
+        'start': 'Starten',
+        'clear': 'Löschen',
+        'share': 'Teilen',
+        'premium_feature': 'Premium Funktion',
+        'premium_message': 'Diese Funktion ist nur für Premium-Nutzer verfügbar. Möchten Sie die Premium-Version kaufen?',
+        'buy_now': 'Jetzt kaufen',
+        'cancel': 'Abbrechen',
+        'pass_the_phone': 'Geben Sie das Telefon weiter an',
+        'draw_part': 'Sie müssen zeichnen: ',
+      },
+      'FR': {
+        'room_code': 'Code de la salle',
+        'waiting_for_players': 'En attendant d\'autres joueurs...',
+        'start': 'Démarrer',
+        'clear': 'Effacer',
+        'share': 'Partager',
+        'premium_feature': 'Fonction Premium',
+        'premium_message': 'Cette fonctionnalité est uniquement disponible pour les utilisateurs premium. Souhaitez-vous acheter la version premium?',
+        'buy_now': 'Acheter maintenant',
+        'cancel': 'Annuler',
+        'pass_the_phone': 'Passez le téléphone à',
+        'draw_part': 'Ils doivent dessiner: ',
+      },
+      'ES': {
+        'room_code': 'Código de la sala',
+        'waiting_for_players': 'Esperando a otros jugadores...',
+        'start': 'Empezar',
+        'clear': 'Borrar',
+        'share': 'Compartir',
+        'premium_feature': 'Función Premium',
+        'premium_message': 'Esta característica está disponible solo para usuarios premium. ¿Te gustaría comprar la versión premium?',
+        'buy_now': 'Comprar ahora',
+        'cancel': 'Cancelar',
+        'pass_the_phone': 'Pasa el teléfono a',
+        'draw_part': 'Ellos necesitan dibujar: ',
+      },
+      'IT': {
+        'room_code': 'Codice della stanza',
+        'waiting_for_players': 'In attesa di altri giocatori...',
+        'start': 'Inizia',
+        'clear': 'Pulisci',
+        'share': 'Condividi',
+        'premium_feature': 'Funzione Premium',
+        'premium_message': 'Questa funzionalità è disponibile solo per gli utenti premium. Vuoi acquistare la versione premium?',
+        'buy_now': 'Compra ora',
+        'cancel': 'Annulla',
+        'pass_the_phone': 'Passa il telefono a',
+        'draw_part': 'Devono disegnare: ',
+      },
+    };
+    return languageStrings[languageCode] ?? languageStrings['EN']!;
+  }
 
   // Clears the signature pad
   void _handleClearButtonPressed() {
@@ -90,58 +184,41 @@ class _GameCanvasScreenState extends State<GameCanvasScreen> {
                       icon: Icon(Icons.share, color: Colors.white),
                       onPressed: () async {
                         try {
-                          // Debug: Check if bytes is null
                           if (bytes == null) {
                             print("Error: bytes are null");
                             return;
                           }
 
-                          // Your share functionality here
                           final byteList = bytes!.buffer.asUint8List();
-                          print(
-                              "Image bytes converted to Uint8List successfully.");
+                          print("Image bytes converted to Uint8List successfully.");
 
                           try {
-                            print(
-                                "Attempting to insert image data into Supabase...");
-
                             final response = await Supabase.instance.client
                                 .from('imagesnew') // Your Supabase table name
                                 .insert([
                               {
-                                'image_data':
-                                    byteList, // The byte data to be saved in the image_data column
-                                'uploaded_at': DateTime.now()
-                                    .toIso8601String(), // Save the timestamp
+                                'image_data': byteList,
+                                'uploaded_at': DateTime.now().toIso8601String(),
                               }
                             ]);
 
-                            // Check for errors or successful insertion
                             if (response == null || response.data == null) {
-                              print(
-                                  "Error: No response received from Supabase.");
+                              print("Error: No response received from Supabase.");
                             } else {
                               print('Image data inserted successfully');
-                              print('Response data: ${response.data}');
                             }
                           } catch (e) {
-                            print(
-                                'Exception occurred during Supabase insert: $e');
+                            print('Exception occurred during Supabase insert: $e');
                           }
 
-                          final tempDir =
-                              await getTemporaryDirectory(); // Use 'path_provider' package
-                          final tempFile =
-                              File('${tempDir.path}/signature.png');
+                          final tempDir = await getTemporaryDirectory();
+                          final tempFile = File('${tempDir.path}/signature.png');
                           await tempFile.writeAsBytes(byteList);
-                          print(
-                              "Image saved to temporary file: ${tempFile.path}");
+                          print("Image saved to temporary file: ${tempFile.path}");
 
-                          // Share the image
                           final result = await Share.shareXFiles(
                             [XFile('${tempFile.path}')],
-                            text:
-                                'Check out this funny creature created by many hands! 😂👾 Download Foldolino now and join the fun!',
+                            text: 'Check out this funny creature created by many hands! 😂👾 Download Foldolino now and join the fun!',
                           );
 
                           if (result.status == ShareResultStatus.success) {
@@ -164,25 +241,25 @@ class _GameCanvasScreenState extends State<GameCanvasScreen> {
   }
 
   void _showPremiumDialog() {
+    final languageStrings = getLanguageStrings(selectedLanguage);
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Colors.black, // Set black background
+          backgroundColor: Colors.black,
           title: Text(
-            'Premium Feature',
-            style: TextStyle(color: Colors.white), // White text for the title
+            languageStrings['premium_feature']!,
+            style: TextStyle(color: Colors.white),
           ),
           content: Text(
-            'This feature is only available for premium users. Would you like to buy the premium version?',
-            style: TextStyle(color: Colors.white), // White text for the content
+            languageStrings['premium_message']!,
+            style: TextStyle(color: Colors.white),
           ),
           actions: [
             TextButton(
               child: Text(
-                'Buy Now',
-                style: TextStyle(
-                    color: Colors.white), // White text for 'Buy Now' button
+                languageStrings['buy_now']!,
+                style: TextStyle(color: Colors.white),
               ),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -191,9 +268,8 @@ class _GameCanvasScreenState extends State<GameCanvasScreen> {
             ),
             TextButton(
               child: Text(
-                'Cancel',
-                style: TextStyle(
-                    color: Colors.white), // White text for 'Cancel' button
+                languageStrings['cancel']!,
+                style: TextStyle(color: Colors.white),
               ),
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
@@ -205,7 +281,6 @@ class _GameCanvasScreenState extends State<GameCanvasScreen> {
     );
   }
 
-  // Determine the parts based on number of players and hat selection
   List<String> _getPartsToDraw() {
     List<String> partsToDraw = [];
 
@@ -237,27 +312,23 @@ class _GameCanvasScreenState extends State<GameCanvasScreen> {
     return partsToDraw;
   }
 
-  // Scroll down action
   void _scrollDown() {
     _scrollController.animateTo(
-      _scrollController.offset +
-          340, // Scroll 340 pixels down (adjust if needed)
+      _scrollController.offset + 340,
       duration: Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
   }
 
-  // Calculate canvas height based on the number of players
   double _calculateCanvasHeight() {
-    double baseHeight = 2000; // Base height for a higher number of players
+    double baseHeight = 2000;
     double adjustedHeight =
-        baseHeight * (widget.numberOfPlayers / 6); // Scaling for 4 to 6 players
+        baseHeight * (widget.numberOfPlayers / 6);
     debugPrint(
         'Canvas height for ${widget.numberOfPlayers} players: $adjustedHeight');
     return adjustedHeight;
   }
 
-  // Calculate the height of each section based on number of players
   double _calculateSectionHeight(double canvasHeight) {
     return canvasHeight / widget.numberOfPlayers;
   }
@@ -265,33 +336,27 @@ class _GameCanvasScreenState extends State<GameCanvasScreen> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double canvasHeight =
-        _calculateCanvasHeight(); // Dynamically calculated height
-    double sectionHeight =
-        _calculateSectionHeight(canvasHeight); // Height of each section
+    double canvasHeight = _calculateCanvasHeight();
+    double sectionHeight = _calculateSectionHeight(canvasHeight);
 
-    List<String> partsToDraw = _getPartsToDraw(); // Get the parts to draw
-
-    // Debugging the parts that players need to draw
-    debugPrint("Parts to draw: $partsToDraw");
+    List<String> partsToDraw = _getPartsToDraw();
+    final languageStrings = getLanguageStrings(selectedLanguage);
 
     return Scaffold(
-      extendBodyBehindAppBar:
-          true, // Allow the body to extend behind the app bar
+      extendBodyBehindAppBar: true,
       body: WillPopScope(
         onWillPop: () async {
-          Navigator.pop(context); // Handles back button press
-          return false; // Prevents default behavior
+          Navigator.pop(context);
+          return false;
         },
         child: Stack(
           children: [
-            // Scrollable Signature Pad Area
             Positioned.fill(
               child: SingleChildScrollView(
                 controller: _scrollController,
                 child: Container(
                   width: screenWidth,
-                  height: canvasHeight, // Dynamically set height
+                  height: canvasHeight,
                   child: SfSignaturePad(
                     key: signatureGlobalKey,
                     backgroundColor: Colors.white,
@@ -302,43 +367,38 @@ class _GameCanvasScreenState extends State<GameCanvasScreen> {
                 ),
               ),
             ),
-            // Draw horizontal dividers directly on the canvas
-            ...List.generate(widget.numberOfPlayers - 1, (index) {
-              return Positioned(
-                top: (index + 1) * sectionHeight, // Position each divider
-                left: 0,
-                right: 0,
-                child: Container(
-                  height: 1, // Divider height
-                  color: Colors.black, // Divider color
-                ),
-              );
-            }),
-            // Positioned tools on the right side
+            if (_currentPlayerIndex != widget.numberOfPlayers - 1)...[
+              ...List.generate(widget.numberOfPlayers - 1, (index) {
+                return Positioned(
+                  top: (index + 1) * sectionHeight,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    height: 1,
+                    color: Colors.black,
+                  ),
+                );
+              }),
+            ],
             Positioned(
               top: 40,
-              right: 20, // Align the tools to the right
+              right: 20,
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.end, // Right align the column items
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // Display the current player's name and part to draw
                   Text(
                     '${widget.playerNames[_currentPlayerIndex]}: ${partsToDraw[_currentPlayerIndex]}',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 20),
-                  // Clear Button with custom icon color
                   FloatingActionButton(
                     onPressed: _handleClearButtonPressed,
-                    child: Icon(Icons.delete,
-                        size: 20), // Clear icon from default icons
+                    child: Icon(Icons.delete, size: 20),
                     backgroundColor: Color(0xFF2ED0C2),
                     foregroundColor: Colors.white,
-                    mini: true, // Makes the button smaller
+                    mini: true,
                   ),
                   SizedBox(height: 10),
-                  // Pen Thickness Slider
                   Slider(
                     value: _penThickness,
                     thumbColor: Color(0xFF2ED0C2),
@@ -355,18 +415,15 @@ class _GameCanvasScreenState extends State<GameCanvasScreen> {
                     },
                   ),
                   SizedBox(height: 10),
-                  // Tick Button with custom icon color, only visible for the last player
                   if (_currentPlayerIndex == widget.numberOfPlayers - 1)
                     FloatingActionButton(
                       onPressed: _handleSaveButtonPressed,
-                      child: Icon(Icons.check,
-                          size: 20), // Tick icon from default icons
+                      child: Icon(Icons.check, size: 20),
                       backgroundColor: Color(0xFF2ED0C2),
                       foregroundColor: Colors.white,
-                      mini: true, // Makes the button smaller
+                      mini: true,
                     ),
                   SizedBox(height: 10),
-                  // Color Picker Icon Button (Premium feature)
                   IconButton(
                     icon: Icon(Icons.color_lens, size: 40),
                     color: Colors.black,
@@ -375,46 +432,39 @@ class _GameCanvasScreenState extends State<GameCanvasScreen> {
                 ],
               ),
             ),
-            // Positioned down button in the bottom-left for scrolling and triggering tick
             Positioned(
               bottom: 20,
               left: 10,
               child: FloatingActionButton(
                 onPressed: () {
-                  // When the down button is pressed on the last player, call the tick button action
                   if (_currentPlayerIndex == widget.numberOfPlayers - 1) {
-                    // Simulate pressing the tick button
                     _handleSaveButtonPressed();
                   } else {
                     setState(() {
                       _currentPlayerIndex++;
                     });
 
-                    // Show pop-up on down arrow click
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                          backgroundColor: Color(0xFF2ED0C2), // Cyan background
+                          backgroundColor: Color(0xFF2ED0C2),
                           title: Text(
-                            'Pass the phone to ${widget.playerNames[_currentPlayerIndex]}',
-                            style: TextStyle(
-                                color: Colors.white), // White text color
+                            '${languageStrings['pass_the_phone']} ${widget.playerNames[_currentPlayerIndex]}',
+                            style: TextStyle(color: Colors.white),
                           ),
                           content: Text(
-                            'They need to draw: ${partsToDraw[_currentPlayerIndex]}',
-                            style: TextStyle(
-                                color: Colors.white), // White text color
+                            '${languageStrings['draw_part']}${partsToDraw[_currentPlayerIndex]}',
+                            style: TextStyle(color: Colors.white),
                           ),
                           actions: [
                             TextButton(
                               child: Text(
-                                'OK',
-                                style: TextStyle(
-                                    color: Colors.white), // White text color
+                                '${languageStrings['cancel']}',
+                                style: TextStyle(color: Colors.white),
                               ),
                               onPressed: () {
-                                Navigator.of(context).pop(); // Close the dialog
+                                Navigator.of(context).pop();
                               },
                             ),
                           ],
@@ -422,15 +472,12 @@ class _GameCanvasScreenState extends State<GameCanvasScreen> {
                       },
                     );
                   }
-
-                  // Scroll down when clicking the down button
                   _scrollDown();
                 },
-                child: Icon(Icons.arrow_downward,
-                    size: 30), // Scroll down icon from default icons
+                child: Icon(Icons.arrow_downward, size: 30),
                 backgroundColor: Color(0xFF2ED0C2),
                 foregroundColor: Colors.white,
-                mini: false, // Makes the button smaller
+                mini: false,
               ),
             ),
           ],

@@ -91,6 +91,25 @@
                     }
                 },
                 {
+                    "source": "/Users/arihant/fold/foldolino/android/app/src/main/res/values/styles.xml",
+                    "from": {
+                        "startLines": "3,14",
+                        "startColumns": "4,4",
+                        "startOffsets": "173,818",
+                        "endLines": "7,16",
+                        "endColumns": "12,12",
+                        "endOffsets": "476,982"
+                    },
+                    "to": {
+                        "startLines": "165,169",
+                        "startColumns": "4,4",
+                        "startOffsets": "8569,8750",
+                        "endLines": "168,171",
+                        "endColumns": "12,12",
+                        "endOffsets": "8745,8914"
+                    }
+                },
+                {
                     "source": "/Users/arihant/.gradle/caches/transforms-3/a49cd171355a6a39687e69f028c8bcbc/transformed/fragment-1.7.1/res/values/values.xml",
                     "from": {
                         "startLines": "2,3,4,5,10",
@@ -141,25 +160,6 @@
                         "startOffsets": "7280",
                         "endColumns": "42",
                         "endOffsets": "7318"
-                    }
-                },
-                {
-                    "source": "/Users/arihant/foldolino/android/app/src/main/res/values/styles.xml",
-                    "from": {
-                        "startLines": "3,14",
-                        "startColumns": "4,4",
-                        "startOffsets": "173,818",
-                        "endLines": "7,16",
-                        "endColumns": "12,12",
-                        "endOffsets": "476,982"
-                    },
-                    "to": {
-                        "startLines": "165,169",
-                        "startColumns": "4,4",
-                        "startOffsets": "8569,8750",
-                        "endLines": "168,171",
-                        "endColumns": "12,12",
-                        "endOffsets": "8745,8914"
                     }
                 },
                 {

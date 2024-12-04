@@ -1,14 +1,78 @@
 import 'package:flutter/material.dart';
 import 'package:foldolino/gamecanvas.dart';
 import 'package:foldolino/optionsscreen.dart'; // Import the GameCanvasScreen
+import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
 
-class ShowPlayerNamesScreen extends StatelessWidget {
+class ShowPlayerNamesScreen extends StatefulWidget {
   final List<String> playerNames;
 
   const ShowPlayerNamesScreen({required this.playerNames});
 
   @override
+  _ShowPlayerNamesScreenState createState() => _ShowPlayerNamesScreenState();
+}
+
+class _ShowPlayerNamesScreenState extends State<ShowPlayerNamesScreen> {
+  String selectedLanguage = 'EN'; // Default language
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLanguagePreference();
+  }
+
+  // Load language preference from SharedPreferences
+  _loadLanguagePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      selectedLanguage = prefs.getString('language') ?? 'EN'; // Default to 'EN'
+    });
+  }
+
+  // Function to get language strings based on selected language
+  Map<String, String> getLanguageStrings(String languageCode) {
+    Map<String, Map<String, String>> languageStrings = {
+      'EN': {
+        'title': 'Ready to Play?',
+        'subtitle': 'Here are your players',
+        'play': 'Play',
+        'settings': 'Settings',
+      },
+      'DE': {
+        'title': 'Bereit zu spielen?',
+        'subtitle': 'Hier sind deine Spieler',
+        'play': 'Spielen',
+        'settings': 'Einstellungen',
+      },
+      'FR': {
+        'title': 'Prêt à jouer?',
+        'subtitle': 'Voici vos joueurs',
+        'play': 'Jouer',
+        'settings': 'Paramètres',
+      },
+      'ES': {
+        'title': '¿Listo para jugar?',
+        'subtitle': 'Aquí están tus jugadores',
+        'play': 'Jugar',
+        'settings': 'Configuraciones',
+      },
+      'IT': {
+        'title': 'Pronto a giocare?',
+        'subtitle': 'Ecco i tuoi giocatori',
+        'play': 'Gioca',
+        'settings': 'Impostazioni',
+      },
+    };
+    return languageStrings[languageCode] ?? languageStrings['EN']!;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    final languageStrings = getLanguageStrings(selectedLanguage);
+
     return Scaffold(
       backgroundColor: Colors.white, // Set background color to white
       appBar: AppBar(
@@ -20,7 +84,7 @@ class ShowPlayerNamesScreen extends StatelessWidget {
         ),
         backgroundColor: Colors.white, // Set AppBar background color to white
         elevation: 0,
-         scrolledUnderElevation: 0,
+        scrolledUnderElevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -40,7 +104,7 @@ class ShowPlayerNamesScreen extends StatelessWidget {
 
             // Title Text
             Text(
-              "Ready to Play?",
+              languageStrings['title']!,
               style: TextStyle(
                 fontFamily: 'Poppins', // Poppins font
                 fontSize: 22,
@@ -53,7 +117,7 @@ class ShowPlayerNamesScreen extends StatelessWidget {
 
             // Subtitle Text
             Text(
-              "Here are your players", // Subtitle removed extra space
+              languageStrings['subtitle']!,
               style: TextStyle(
                 fontFamily: 'Poppins', // Poppins font
                 fontSize: 16,
@@ -67,7 +131,7 @@ class ShowPlayerNamesScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center, // Center the row
               children: [
-                for (var playerName in playerNames)
+                for (var playerName in widget.playerNames)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12.0), // Reduced space between players
                     child: Column(
@@ -107,7 +171,7 @@ class ShowPlayerNamesScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => GameCanvasScreen(numberOfPlayers: playerNames.length,hatSelected: true,playerNames: playerNames,),
+                    builder: (context) => GameCanvasScreen(numberOfPlayers: widget.playerNames.length, hatSelected: true, playerNames: widget.playerNames),
                   ),
                 );
               },
@@ -119,7 +183,7 @@ class ShowPlayerNamesScreen extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
               ),
               child: Text(
-                'Play',
+                languageStrings['play']!,
                 style: TextStyle(
                   fontFamily: 'Poppins', // Poppins font
                   fontSize: 14, // Reduced font size for the button text
@@ -128,7 +192,7 @@ class ShowPlayerNamesScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 20),  // Further reduced space at the bottom for better padding
+            SizedBox(height: 20), // Further reduced space at the bottom for better padding
           ],
         ),
       ),
@@ -140,7 +204,7 @@ class ShowPlayerNamesScreen extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => SettingsScreen(numberOfPlayers: playerNames.length,playerNames: playerNames,),
+              builder: (context) => SettingsScreen(numberOfPlayers: widget.playerNames.length, playerNames: widget.playerNames),
             ),
           );
         },

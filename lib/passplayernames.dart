@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:foldolino/passshowplayer.dart';
-import 'package:foldolino/playernamemodel.dart'; // Import the PlayerNamesModel
- // Import the next screen
+import 'package:foldolino/playernamemodel.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
 
 class EnterPlayerNamesScreen extends StatefulWidget {
   @override
@@ -17,6 +17,78 @@ class _EnterPlayerNamesScreenState extends State<EnterPlayerNamesScreen> {
   ];
 
   PlayerNamesModel playerNamesModel = PlayerNamesModel(); // Create instance of model
+  String selectedLanguage = 'EN'; // Default language
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLanguagePreference();
+  }
+
+  // Load language preference from SharedPreferences
+  _loadLanguagePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      selectedLanguage = prefs.getString('language') ?? 'EN'; // Default to 'EN'
+    });
+  }
+
+  // Function to get language strings based on selected language
+  Map<String, String> getLanguageStrings(String languageCode) {
+    Map<String, Map<String, String>> languageStrings = {
+      'EN': {
+        'title': 'Enter Player Names',
+        'subtitle': 'Please enter the names of the players',
+        'player_name': 'Player',
+        'incomplete_info': 'Incomplete Information',
+        'incomplete_info_message': 'Please enter names for at least 4 players and at most 6 players.',
+        'continue': 'Continue',
+        'add_player': 'Add Player',
+        'remove_player': 'Remove Player',
+      },
+      'DE': {
+        'title': 'Gib die Spielernamen ein',
+        'subtitle': 'Bitte gib die Namen der Spieler ein',
+        'player_name': 'Spieler',
+        'incomplete_info': 'Unvollständige Informationen',
+        'incomplete_info_message': 'Bitte gib Namen für mindestens 4 Spieler und höchstens 6 Spieler ein.',
+        'continue': 'Weiter',
+        'add_player': 'Spieler hinzufügen',
+        'remove_player': 'Spieler entfernen',
+      },
+      'FR': {
+        'title': 'Entrez les noms des joueurs',
+        'subtitle': 'Veuillez entrer les noms des joueurs',
+        'player_name': 'Joueur',
+        'incomplete_info': 'Informations incomplètes',
+        'incomplete_info_message': 'Veuillez entrer les noms pour au moins 4 joueurs et au plus 6 joueurs.',
+        'continue': 'Continuer',
+        'add_player': 'Ajouter un joueur',
+        'remove_player': 'Supprimer un joueur',
+      },
+      'ES': {
+        'title': 'Ingrese los nombres de los jugadores',
+        'subtitle': 'Por favor ingrese los nombres de los jugadores',
+        'player_name': 'Jugador',
+        'incomplete_info': 'Información incompleta',
+        'incomplete_info_message': 'Por favor ingrese nombres para al menos 4 jugadores y como máximo 6 jugadores.',
+        'continue': 'Continuar',
+        'add_player': 'Agregar jugador',
+        'remove_player': 'Eliminar jugador',
+      },
+      'IT': {
+        'title': 'Inserisci i nomi dei giocatori',
+        'subtitle': 'Si prega di inserire i nomi dei giocatori',
+        'player_name': 'Giocatore',
+        'incomplete_info': 'Informazioni incomplete',
+        'incomplete_info_message': 'Si prega di inserire i nomi per almeno 4 giocatori e al massimo 6 giocatori.',
+        'continue': 'Continua',
+        'add_player': 'Aggiungi giocatore',
+        'remove_player': 'Rimuovi giocatore',
+      },
+    };
+    return languageStrings[languageCode] ?? languageStrings['EN']!;
+  }
 
   void _addPlayer() {
     if (controllers.length < 6) {
@@ -35,19 +107,15 @@ class _EnterPlayerNamesScreenState extends State<EnterPlayerNamesScreen> {
   }
 
   bool _canContinue() {
-    // Check if all player names are entered (non-empty)
     return controllers.every((controller) => controller.text.isNotEmpty);
   }
 
   void _continue() {
-    // Get all player names from the controllers
     List<String> playerNames = controllers.map((c) => c.text).toList();
 
-    // Set the player names in the model
     bool success = playerNamesModel.setPlayerNames(playerNames);
 
     if (success) {
-      // Navigate to the next screen
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -57,12 +125,11 @@ class _EnterPlayerNamesScreenState extends State<EnterPlayerNamesScreen> {
         ),
       );
     } else {
-      // Show alert if player names are not valid (not 4 to 6 names)
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text("Incomplete Information"),
-          content: Text("Please enter names for at least 4 players and at most 6 players."),
+          title: Text(getLanguageStrings(selectedLanguage)['incomplete_info']!),
+          content: Text(getLanguageStrings(selectedLanguage)['incomplete_info_message']!),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -78,6 +145,8 @@ class _EnterPlayerNamesScreenState extends State<EnterPlayerNamesScreen> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+
+    final languageStrings = getLanguageStrings(selectedLanguage);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -111,7 +180,7 @@ class _EnterPlayerNamesScreenState extends State<EnterPlayerNamesScreen> {
 
               // Title and Subtitle
               Text(
-                "Enter Player Names",
+                languageStrings['title']!,
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: screenHeight * 0.05,
@@ -122,7 +191,7 @@ class _EnterPlayerNamesScreenState extends State<EnterPlayerNamesScreen> {
               ),
               SizedBox(height: screenHeight * 0.01),
               Text(
-                "Please enter the names of the players",
+                languageStrings['subtitle']!,
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: screenHeight * 0.03,
@@ -153,14 +222,14 @@ class _EnterPlayerNamesScreenState extends State<EnterPlayerNamesScreen> {
                             Expanded(
                               child: PlayerNameField(
                                 controller: controllers[index],
-                                playerNumber: "Player ${index + 1}",
+                                playerNumber: "${languageStrings['player_name']} ${index + 1}",
                               ),
                             ),
                             if (index >= 4)
                               IconButton(
                                 icon: Icon(Icons.remove_circle, color: Colors.red, size: 30),
                                 onPressed: () => _removePlayer(index),
-                                tooltip: "Remove Player",
+                                tooltip: languageStrings['remove_player']!,
                               ),
                           ],
                         ),
@@ -175,13 +244,13 @@ class _EnterPlayerNamesScreenState extends State<EnterPlayerNamesScreen> {
                 IconButton(
                   onPressed: _addPlayer,
                   icon: Icon(Icons.add_circle, color: Color(0xFF2ED0C2), size: 35),
-                  tooltip: "Add Player",
+                  tooltip: languageStrings['add_player']!,
                 ),
 
               // Continue Button
               SizedBox(height: screenHeight * 0.03),
               ElevatedButton(
-                onPressed: _canContinue() ? _continue : null,  // Disable if not all names are entered
+                onPressed: _canContinue() ? _continue : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF2ED0C2),
                   shape: RoundedRectangleBorder(
@@ -190,7 +259,7 @@ class _EnterPlayerNamesScreenState extends State<EnterPlayerNamesScreen> {
                   padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: screenHeight * 0.03),
                 ),
                 child: Text(
-                  'Continue',
+                  languageStrings['continue']!,
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: screenHeight * 0.035,
@@ -206,7 +275,6 @@ class _EnterPlayerNamesScreenState extends State<EnterPlayerNamesScreen> {
     );
   }
 }
-
 
 class PlayerNameField extends StatelessWidget {
   final TextEditingController controller;

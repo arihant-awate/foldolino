@@ -1,12 +1,74 @@
 import 'package:flutter/material.dart';
 import 'package:foldolino/multiplayercreate.dart';
 import 'package:foldolino/passplayernames.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class SelectGameModeScreen extends StatelessWidget {
+class SelectGameModeScreen extends StatefulWidget {
+  @override
+  _SelectGameModeScreenState createState() => _SelectGameModeScreenState();
+}
+
+class _SelectGameModeScreenState extends State<SelectGameModeScreen> {
+  String selectedLanguage = 'EN'; // Default language
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLanguagePreference();
+  }
+
+  // Load language preference from SharedPreferences
+  _loadLanguagePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      selectedLanguage = prefs.getString('language') ?? 'EN'; // Default to 'EN'
+    });
+  }
+
+  // Function to get language strings based on selected language
+  Map<String, String> getLanguageStrings(String languageCode) {
+    Map<String, Map<String, String>> languageStrings = {
+      'EN': {
+        'title': 'Which mode do you want to play?',
+        'subtitle': 'Please select your game mode',
+        'pass_and_play': 'Pass and Play',
+        'multiplayer': 'Multiplayer',
+      },
+      'DE': {
+        'title': 'Welchen Modus möchtest du spielen?',
+        'subtitle': 'Bitte wähle deinen Spielmodus',
+        'pass_and_play': 'Pass and Play',
+        'multiplayer': 'Mehrspieler',
+      },
+      'FR': {
+        'title': 'Quel mode voulez-vous jouer ?',
+        'subtitle': 'Veuillez sélectionner votre mode de jeu',
+        'pass_and_play': 'Pass and Play',
+        'multiplayer': 'Multijoueur',
+      },
+      'ES': {
+        'title': '¿Qué modo quieres jugar?',
+        'subtitle': 'Por favor selecciona tu modo de juego',
+        'pass_and_play': 'Pasa y juega',
+        'multiplayer': 'Multijugador',
+      },
+      'IT': {
+        'title': 'Quale modalità vuoi giocare?',
+        'subtitle': 'Per favore seleziona la modalità di gioco',
+        'pass_and_play': 'Passa e gioca',
+        'multiplayer': 'Multigiocatore',
+      },
+    };
+    return languageStrings[languageCode] ?? languageStrings['EN']!;
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+
+    // Get language strings dynamically
+    final languageStrings = getLanguageStrings(selectedLanguage);
 
     return Scaffold(
       backgroundColor: Colors.white, // Set background color to white
@@ -38,7 +100,7 @@ class SelectGameModeScreen extends StatelessWidget {
 
             // Title Text
             Text(
-              "Which mode do you want to play?",
+              languageStrings['title']!,
               style: TextStyle(
                 fontFamily: 'Poppins', // Poppins font
                 fontSize: screenHeight * 0.06,
@@ -51,7 +113,7 @@ class SelectGameModeScreen extends StatelessWidget {
 
             // Subtitle Text
             Text(
-              "Please select your game mode",
+              languageStrings['subtitle']!,
               style: TextStyle(
                 fontFamily: 'Poppins', // Poppins font
                 fontSize: screenHeight * 0.04,
@@ -68,7 +130,7 @@ class SelectGameModeScreen extends StatelessWidget {
                 children: [
                   // "Pass and Play" Button
                   GameModeOption(
-                    title: "Pass and Play",
+                    title: languageStrings['pass_and_play']!,
                     color: Color(0xFF2ED0C2), // Theme color
                     icon: Icons.group,
                     onTap: () {
@@ -86,7 +148,7 @@ class SelectGameModeScreen extends StatelessWidget {
 
                   // "Multiplayer" Button
                   GameModeOption(
-                    title: "Multiplayer",
+                    title: languageStrings['multiplayer']!,
                     color: Color(0xFF2ED0C2), // Theme color
                     icon: Icons.online_prediction,
                     onTap: () {

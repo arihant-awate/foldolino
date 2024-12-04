@@ -1,0 +1,1 @@
+ /Users/arihant/fold/foldolino/.dart_tool/flutter_build/49287e7176d334e66a2dd8169f546365/native_assets.yaml: 
